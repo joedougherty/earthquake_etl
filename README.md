@@ -6,6 +6,6 @@ ETL Tasks live in `fabfile.py`
 
 List ETL tasks:
 
-    `fab --list`
+    fab --list
 
 
