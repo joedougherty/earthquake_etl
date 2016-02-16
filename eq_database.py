@@ -1,4 +1,5 @@
 from collections import namedtuple
+import pandas as pd
 import sqlite3
 
 """ 
@@ -16,29 +17,7 @@ def get_db_connection(db_name):
     cursor = conn.cursor()
     return db_conn_mgr(conn, cursor)
 
-def create_eq_table(db_location):
-    """ 
-    Create the initial table for the earthquake data to be written to.
-    db_location should be an absolute path.
-    """
-    fields_and_types = [
-        ('date', 'TEXT'), ('latitude', 'REAL'), 
-        ('longitude', 'REAL'), ('depth', 'REAL'), 
-        ('mag', 'REAL'), ('magType', 'TEXT'), 
-        ('nst', 'INT'), ('gap', 'REAL'), 
-        ('dmin', 'REAL'), ('rms', 'REAL'), 
-        ('net', 'TEXT'), ('id', 'TEXT'), 
-        ('updated', 'TEXT'), ('place', 'TEXT'), 
-        ('type', 'TEXT'), ('horizontalError', 'REAL'), 
-        ('depthError', 'REAL'), ('magError', 'REAL'), 
-        ('magNst', 'INT'), ('status', 'TEXT'), 
-        ('locationSource', 'TEXT'), ('magSource', 'TEXT')]
-    
-    values = ""
-    for field_and_type in fields_and_types:
-        values += "{} {} ".format(field_and_type[0], field_and_type[1])
-
+def create_eq_table(csv_file, db_location):
+    dataframe = pd.read_csv(csv_file)
     db = get_db_connection(db_location)
-    db.cursor.execute("CREATE TABLE earthquakes ({});".format(values))
-    db.conn.commit()
-    db.conn.close()
+    dataframe.to_sql('all_earthquakes', db.conn)
