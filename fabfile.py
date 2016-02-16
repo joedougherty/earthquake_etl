@@ -30,13 +30,13 @@ def create_required_directories():
 @task
 def create_initial_database():
     """ Create initial database for real-time earthquake data. """
-    if not etl.dry_run:
+    if not etl.dry_run: # TODO is this strictly necessary?
         etl.database_dir = os.path.join(os.getcwd(), 'database') 
         create_eq_table(os.path.join(etl.database_dir, 'earthquakes.sqlite'))
 
 @etl.log
 def set_csv_file_location():
-    if not etl.dry_run:
+    if not etl.dry_run: # TODO is this strictly necessary? If so, document _why_!
         etl.csv_location = os.path.join(etl.tmpdata_dir, 'eq_{}.csv'.format(etl.timestamp()))
 
 #-----------------------------#
