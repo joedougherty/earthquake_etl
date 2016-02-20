@@ -53,11 +53,11 @@ def setup():
     etl.db = get_db(etl.db_location)
 
 @etl.log
-def update_data_is_newer(latest_prod_date, earlier_update_date):
+def update_data_is_newer(latest_prod_date, earliest_update_date):
     latest_production_time = iso8601.parse_date(latest_prod_date)
     earliest_new_data_time = iso8601.parse_date(earliest_update_date)
     
-    if earliest_new_data_eq_time > latest_production_time:
+    if earliest_new_data_time > latest_production_time:
         return True
     return False
 
@@ -87,7 +87,7 @@ def append_newest_data():
     if num_new_rows > 0 and update_data_is_newer(latest_prod_date, earliest_new_data_time):
         new_records = [tuple(x) for x in df.to_records(index=False)]
         insert_query = "INSERT INTO all_earthquakes VALUES" \
-                       "(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+                       "(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
 
         # Write new rows to the database
         etl.db.cursor.executemany(insert_query, new_records) 
@@ -95,7 +95,7 @@ def append_newest_data():
     else:
         etl.logger.info("{} contains no new rows. Process ends here.".format(etl.csv_file_location))
 
-@task
+@task()
 def main():
     """ Run the whole ETL process. """
     setup()
