@@ -69,6 +69,7 @@ def update_data_is_newer(latest_prod_date, earliest_update_date):
 def download_data():
     """ Download latest data from http://earthquake.usgs.gov/earthquakes/feed/v1.0/csv.php """
     endpoint = "http://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_hour.csv"
+    etl.logger.info("Downloaded data for this run: {}".format(etl.csv_file_location))
     etl.download_file(endpoint, etl.csv_file_location)
 
 @task
@@ -78,13 +79,17 @@ def append_newest_data():
     df = pd.read_csv(etl.csv_file_location)
     num_new_rows = len(df)
 
-    earliest_new_data_time = df.time.min()
+    earliest_new_update_date = df.time.min()
     latest_prod_date_result = etl.db.cursor.execute('select max(time) from all_earthquakes')
     latest_prod_date = latest_prod_date_result.fetchone()[0]
 
+    # Log the pertinent dates
+    etl.logger.info("Latest production data date: {}".format(latest_prod_date))
+    etl.logger.info("Earliest update data date: {}".format(earliest_new_update_date))
+
     # Verify that the downloaded records are actually new 
     # with respect to the previously existing data
-    if num_new_rows > 0 and update_data_is_newer(latest_prod_date, earliest_new_data_time):
+    if num_new_rows > 0 and update_data_is_newer(latest_prod_date, earliest_new_update_date):
         new_records = [tuple(x) for x in df.to_records(index=False)]
         insert_query = "INSERT INTO all_earthquakes VALUES" \
                        "(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
@@ -95,7 +100,7 @@ def append_newest_data():
     else:
         etl.logger.info("{} contains no new rows. Process ends here.".format(etl.csv_file_location))
 
-@task()
+@task
 def main():
     """ Run the whole ETL process. """
     setup()
