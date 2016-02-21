@@ -1,5 +1,5 @@
 # System-level modules
-from fabric.api import task, env, local
+from fabric.api import task, env, local 
 from fabric.contrib.console import confirm
 from tinyetl import TinyETL
 import os
@@ -75,7 +75,7 @@ def write_new_records_to_db(new_records):
     etl.db.cursor.executemany(insert_query, new_records) 
     etl.db.conn.commit()
 
-    etl.logger.info("Wrote {} rows to database.".format(num_new_rows))
+    etl.logger.info("Wrote {} rows to database.".format(len(new_rows)))
     
 #-----------------------------#
 # ETL Tasks                   #
