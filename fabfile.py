@@ -63,9 +63,9 @@ def setup():
     """ This is a good place for any runtime additions to the etl object. """
     etl.csv_file_location = os.path.join(etl.tmpdata_dir, 'eq_{}.csv'.format(etl.timestamp()))
     etl.db = get_db(etl.db_location)
+
     # This could also be used as a place to output
     # all etl object attrs to the log for debugging purposes
-
     # Example: 
     etl.logger.debug(etl)
     
