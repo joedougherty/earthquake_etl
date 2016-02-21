@@ -32,8 +32,14 @@ etl = TinyETL(
 @task
 def create_required_directories():
     """ Create directories for logs and tmpdata to live in. """
+    print("Creating log directory...")
     local("mkdir -p {}".format(etl.log_dir))
+
+    print("Creating temp data directory...")
     local("mkdir -p {}".format(etl.tmpdata_dir))
+
+    print("Creating database directory...")
+    local("mkdir -p {}".format(os.path.split(etl.db_location)[0]))
 
 @task
 def create_initial_database():
@@ -50,7 +56,6 @@ def create_initial_database():
 @task
 def info():
     """ Print some useful information about this ETL process. """
-    setup()
     print(etl)
 
 @etl.log
@@ -58,7 +63,12 @@ def setup():
     """ This is a good place for any runtime additions to the etl object. """
     etl.csv_file_location = os.path.join(etl.tmpdata_dir, 'eq_{}.csv'.format(etl.timestamp()))
     etl.db = get_db(etl.db_location)
+    # This could also be used as a place to output
+    # all etl object attrs to the log for debugging purposes
 
+    # Example: 
+    etl.logger.debug(etl)
+    
 @etl.log
 def update_data_is_newer(latest_prod_date, earliest_update_date):
     latest_production_time = iso8601.parse_date(latest_prod_date)
@@ -75,7 +85,7 @@ def write_new_records_to_db(new_records):
     etl.db.cursor.executemany(insert_query, new_records) 
     etl.db.conn.commit()
 
-    etl.logger.info("Wrote {} rows to database.".format(len(new_rows)))
+    etl.logger.info("Wrote {} rows to database.".format(len(new_records)))
     
 #-----------------------------#
 # ETL Tasks                   #
@@ -108,6 +118,8 @@ def append_newest_data():
     if num_new_rows > 0 and update_data_is_newer(latest_prod_date, earliest_new_update_date):
         write_new_records_to_db( [tuple(x) for x in df.to_records(index=False)] )
     else:
+        msg = "{} contains no new rows. Process ends here.".format(etl.csv_file_location)
+        print(msg)
         etl.logger.info("{} contains no new rows. Process ends here.".format(etl.csv_file_location))
 
 @task
