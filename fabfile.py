@@ -1,5 +1,6 @@
 # System-level modules
 from fabric.api import task, env, local
+from fabric.contrib.console import confirm
 from tinyetl import TinyETL
 import os
 import requests
@@ -37,8 +38,14 @@ def create_required_directories():
 @task
 def create_initial_database():
     """ Create initial database for real-time earthquake data. """
-    all_earthquakes = os.path.join(os.getcwd(), 'download_data', 'all_earthquakes', 'all_month.csv')
-    create_eq_table(all_earthquakes, etl.db_location)
+    if confirm("Warning! This will replace an existing database!"):
+        all_earthquakes = os.path.join(os.getcwd(), 'download_data', 'all_earthquakes', 'all_month.csv')
+        create_eq_table(all_earthquakes, etl.db_location)
+        print("New database created.")
+        print("Database location: {}".format(etl.db_location))
+        print("Data used to create database: {}".format(all_earthquakes))
+    else:
+        print("No changes made.")
 
 @task
 def info():
@@ -61,6 +68,15 @@ def update_data_is_newer(latest_prod_date, earliest_update_date):
         return True
     return False
 
+@etl.log
+def write_new_records_to_db(new_records):
+    insert_query = "INSERT INTO all_earthquakes VALUES" \
+                   "(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+    etl.db.cursor.executemany(insert_query, new_records) 
+    etl.db.conn.commit()
+
+    etl.logger.info("Wrote {} rows to database.".format(num_new_rows))
+    
 #-----------------------------#
 # ETL Tasks                   #
 #-----------------------------#
@@ -90,13 +106,7 @@ def append_newest_data():
     # Verify that the downloaded records are actually new 
     # with respect to the previously existing data
     if num_new_rows > 0 and update_data_is_newer(latest_prod_date, earliest_new_update_date):
-        new_records = [tuple(x) for x in df.to_records(index=False)]
-        insert_query = "INSERT INTO all_earthquakes VALUES" \
-                       "(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
-
-        # Write new rows to the database
-        etl.db.cursor.executemany(insert_query, new_records) 
-        etl.logger.info("Wrote {} rows to database.".format(num_new_rows))
+        write_new_records_to_db( [tuple(x) for x in df.to_records(index=False)] )
     else:
         etl.logger.info("{} contains no new rows. Process ends here.".format(etl.csv_file_location))
 
