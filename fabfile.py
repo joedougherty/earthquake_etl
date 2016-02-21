@@ -35,10 +35,10 @@ def create_required_directories():
     print("Creating log directory...")
     local("mkdir -p {}".format(etl.log_dir))
 
-    print("Creating temp data directory...")
+    print("\nCreating temp data directory...")
     local("mkdir -p {}".format(etl.tmpdata_dir))
 
-    print("Creating database directory...")
+    print("\nCreating database directory...")
     local("mkdir -p {}".format(os.path.split(etl.db_location)[0]))
 
 @task
