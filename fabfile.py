@@ -127,7 +127,7 @@ def append_newest_data():
     else:
         msg = "{} contains no new rows. Process ends here.".format(etl.csv_file_location)
         print(msg)
-        etl.logger.info("{} contains no new rows. Process ends here.".format(etl.csv_file_location))
+        etl.logger.info(msg)
 
 @task
 def main():
