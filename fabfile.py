@@ -1,5 +1,5 @@
 # System-level modules
-from fabric.api import task, env, local 
+from fabric.api import task, env, local, lcd
 from fabric.contrib.console import confirm
 from tinyetl import TinyETL
 import os
@@ -57,6 +57,13 @@ def create_initial_database():
 def info():
     """ Print some useful information about this ETL process. """
     print(etl)
+
+@task
+def view_last_log():
+    """ Shortcut to read last log. """
+    with lcd(etl.log_dir):
+        filename = local("ls -alrt *.log | awk '{print $9}' | tail -1", capture=True)
+        local("less {}".format(filename))
 
 @etl.log
 def setup():
