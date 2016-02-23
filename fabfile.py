@@ -1,6 +1,5 @@
 # System-level modules
 from fabric.api import task, env, local, lcd
-from fabric.contrib.console import confirm
 from tinyetl import TinyETL
 import os
 import requests
