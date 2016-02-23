@@ -29,7 +29,6 @@ etl = TinyETL(
 #-----------------------------#
 # Helper Tasks/Functions      #
 #-----------------------------#
-@task
 def create_required_directories():
     """ Create directories for logs and tmpdata to live in. """
     print("Creating log directory...")
@@ -41,7 +40,6 @@ def create_required_directories():
     print("\nCreating database directory...")
     local("mkdir -p {}".format(os.path.split(etl.db_location)[0]))
 
-@task
 def create_initial_database():
     """ Create initial database for real-time earthquake data. """
     if confirm("Warning! This will replace an existing database!"):
@@ -52,6 +50,12 @@ def create_initial_database():
         print("Data used to create database: {}".format(all_earthquakes))
     else:
         print("No changes made.")
+
+@task
+def build():
+    """ Setup earthquake etl directory structure and build initial database. """
+    create_required_directories()
+    create_initial_database()
 
 @task
 def info():
