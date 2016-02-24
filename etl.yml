@@ -1,0 +1,22 @@
+---
+ - hosts: etl-droplets
+   sudo: yes
+   user: etl
+   tasks:
+    - name: Install build-essential
+      apt: name=build-essential state=latest update_cache=true
+
+    - name: Install python-dev
+      apt: name=python-dev state=latest update_cache=true
+
+    - name: Install pip
+      apt: name=python-pip state=present 
+
+    - name: Install sqlite3
+      apt: name=sqlite3 state=present
+
+    - name: Install git
+      apt: name=git state=present 
+
+    - name: Install ipython
+      apt: name=ipython state=present
