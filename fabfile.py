@@ -15,14 +15,16 @@ Real-time Earthquake Data
 Source: http://earthquake.usgs.gov/earthquakes/feed/v1.0/csv.php
 """
 
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+
 etl = TinyETL(
     'eq_intraday',
     description,
     env=env, 
-    log_dir=os.path.join(os.getcwd(), "logs"),
-    tmpdata_dir=os.path.join(os.getcwd(), "download_data"),
+    log_dir=os.path.join(BASE_DIR, "logs"),
+    tmpdata_dir=os.path.join(BASE_DIR, "download_data")
     # Non-required args, but good for namespacing purposes
-    db_location = os.path.join(os.getcwd(), 'database', 'earthquakes.sqlite'),
+    db_location = os.path.join(BASE_DIR, 'database', 'earthquakes.sqlite'),
 )
 
 #-----------------------------#
